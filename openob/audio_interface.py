@@ -12,9 +12,8 @@ class AudioInterface(object):
     int_properties = ['samplerate']
     bool_properties = ['jack_auto']
 
-    def __init__(self, node_name, interface_name='default'):
+    def __init__(self, interface_name):
         self.interface_name = interface_name
-        self.node_name = node_name
         self.logger_factory = LoggerFactory()
         self.logger = self.logger_factory.getLogger('audio.%s' % self.interface_name)
         self.broker = MessageBroker('audio:%s' % self.interface_name)
@@ -36,16 +35,21 @@ class AudioInterface(object):
 
     def set_from_argparse(self, opts):
         """Set up the audio interface from argparse options"""
-        self.set("mode", opts.mode)
+        if hasattr(opts, 'mode'):
+            self.set("mode", opts.mode)
 
-        if opts.mode == "tx":
-            self.set("type", opts.audio_input)
-            self.set("samplerate", opts.samplerate)
-        elif opts.mode == "rx":
-            self.set("type", opts.audio_output)
-        if self.get("type") == "alsa":
+            if opts.mode == "tx":
+                driver = opts.audio_input
+                self.set("samplerate", opts.samplerate)
+            elif opts.mode == "rx":
+                driver = opts.audio_output
+            self.set('type', driver)
+        else:
+            driver = opts.driver
+
+        if driver == "alsa":
             self.set("alsa_device", opts.alsa_device)
-        elif self.get("type") == "jack":
+        elif driver == "jack":
             self.set("jack_auto", opts.jack_auto)
             if opts.jack_name is not None:
                 self.set("jack_name", opts.jack_name)

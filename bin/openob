@@ -60,7 +60,7 @@ MessageBroker.setup(opts.config_host, 'standalone')
 link_config = LinkConfig(opts.link_name)
 link_config.set_from_argparse(opts)
 
-audio_interface = AudioInterface(opts.node_name)
+audio_interface = AudioInterface(opts.mode)
 audio_interface.set_from_argparse(opts)
 
 node = Node(opts.node_name)
