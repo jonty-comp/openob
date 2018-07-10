@@ -68,12 +68,13 @@ class RTPTransmitter(object):
         bin = Gst.Bin.new('audio')
 
         # Audio input
-        if self.audio_interface.type == 'auto':
+        interface_type = self.audio_interface.type
+        if interface_type == 'auto':
             source = Gst.ElementFactory.make('autoaudiosrc')
-        elif self.audio_interface.type == 'alsa':
+        elif interface_type == 'alsa':
             source = Gst.ElementFactory.make('alsasrc')
             source.set_property('device', self.audio_interface.alsa_device)
-        elif self.audio_interface.type == 'jack':
+        elif interface_type == 'jack':
             source = Gst.ElementFactory.make('jackaudiosrc')
             if self.audio_interface.jack_auto:
                 source.set_property('connect', 'auto')
@@ -82,7 +83,7 @@ class RTPTransmitter(object):
             source.set_property('buffer-time', 50000)
             source.set_property('name', self.audio_interface.jack_name)
             source.set_property('client-name', self.audio_interface.jack_name)
-        elif self.audio_interface.type == 'test':
+        elif interface_type == 'test':
             source = Gst.ElementFactory.make('audiotestsrc')
 
         bin.add(source)
@@ -107,8 +108,9 @@ class RTPTransmitter(object):
         caps = Gst.Caps.new_empty_simple('audio/x-raw')
 
         # if audio_rate has been specified, then add that to the capsfilter
-        if self.audio_interface.samplerate != 0:
-            caps.set_value('rate', self.audio_interface.samplerate)
+        samplerate = self.audio_interface.samplerate
+        if samplerate != 0:
+            caps.set_value('rate', samplerate)
         
         self.logger.debug(caps.to_string())
         capsfilter.set_property('caps', caps)

@@ -1,7 +1,7 @@
 import redis
 import time
 from openob.logger import LoggerFactory
-
+from openob.broker import MessageBroker
 
 class LinkConfig(object):
 
@@ -12,71 +12,42 @@ class LinkConfig(object):
         to receive the stream using the data and methods in this config.
     """
 
-    def __init__(self, link_name, redis_host):
-        """
-            Set up a new LinkConfig instance - needs to know the link name and
-            configuration host.
-        """
-        self.int_properties = ['port', 'jitter_buffer', 'opus_framesize', 'opus_complexity', 'bitrate', 'opus_loss_expectation']
-        self.bool_properties = ['opus_dtx', 'opus_fec', 'multicast']
-        self.link_name = link_name
-        self.redis_host = redis_host
-        self.logger_factory = LoggerFactory()
-        self.logger = self.logger_factory.getLogger('link.%s.config' % self.link_name)
-        self.logger.info("Connecting to configuration host %s" % self.redis_host)
-        self.redis = None
-        while True:
-            try:
-                self.redis = redis.StrictRedis(host=self.redis_host, charset="utf-8", decode_responses=True)
-                break
-            except Exception as e:
-                self.logger.error(
-                    "Unable to connect to configuration host! Retrying. (%s)"
-                    % e
-                )
-                time.sleep(0.1)
+    int_properties = ['port', 'jitter_buffer', 'opus_framesize', 'opus_complexity', 'bitrate', 'opus_loss_expectation']
+    bool_properties = ['opus_dtx', 'opus_fec', 'multicast']
 
-    def blocking_get(self, key):
-        """Get a value, blocking until it's not None if needed"""
-        while True:
-            value = self.get(key)
-            if value is not None:
-                self.logger.debug("Fetched (blocking) %s, got %s" % (key, value))
-                return value
-            time.sleep(0.1)
+    def __init__(self, link_name):
+        """
+            Set up a new LinkConfig instance - needs to know the link name
+        """
+        self.link_name = link_name
+        self.logger_factory = LoggerFactory()
+        identifier = 'link.%s.config' % self.link_name
+        self.logger = self.logger_factory.getLogger('link.%s.config' % self.link_name)
+        self.broker = MessageBroker('link:%s' % self.link_name)
 
     def set(self, key, value):
-        """Set a value in the config store"""
-        scoped_key = self.scoped_key(key)
-        self.redis.set(scoped_key, value)
-        self.logger.debug("Set %s to %s" % (scoped_key, value))
-        return value
+        return self.broker.set(key, value)
 
     def get(self, key):
-        """Get a value from the config store"""
-        scoped_key = self.scoped_key(key)
-        value = self.redis.get(scoped_key)
-        
+        value = self.broker.get(key)
         # Do some typecasting
         if key in self.int_properties:
             value = int(value)
         if key in self.bool_properties:
             value = (value == 'True')
-        self.logger.debug("Fetched %s, got %s" % (scoped_key, value))
+        
         return value
 
-    def unset(self, key):
-        scoped_key = self.scoped_key(key)
-        self.redis.delete(scoped_key)
-        self.logger.debug("Unset %s" % scoped_key)
-
+    def blocking_get(self, key):
+        while True:
+            value = self.get(key)
+            if value is not None:
+                self.logger.debug('Fetched (blocking) %s, got %s' % (key, value))
+                return value
+            time.sleep(0.1)
+    
     def __getattr__(self, key):
-        """Convenience method to access get"""
         return self.get(key)
-
-    def scoped_key(self, key):
-        """Return an appropriate key name scoped to a link"""
-        return ("openob:%s:%s" % (self.link_name, key))
 
     def set_from_argparse(self, opts):
         """Given an optparse object from bin/openob, configure this link"""

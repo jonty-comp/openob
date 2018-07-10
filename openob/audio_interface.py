@@ -1,5 +1,5 @@
 from openob.logger import LoggerFactory
-
+from openob.broker import MessageBroker
 
 class AudioInterface(object):
 
@@ -9,27 +9,31 @@ class AudioInterface(object):
         an AudioInterface should define the mode of link operation.
     """
 
+    int_properties = ['samplerate']
+    bool_properties = ['jack_auto']
+
     def __init__(self, node_name, interface_name='default'):
         self.interface_name = interface_name
         self.node_name = node_name
         self.logger_factory = LoggerFactory()
-        self.logger = self.logger_factory.getLogger('node.%s.audio_interface.%s' 
-                                                    % (self.node_name, self.interface_name))
-        self.config = dict()
+        self.logger = self.logger_factory.getLogger('audio.%s' % self.interface_name)
+        self.broker = MessageBroker(
+            'node:%s:audio_interface:%s' % (self.node_name, self.interface_name)
+        )
 
     def set(self, key, value):
-        """Set a config value"""
-        self.logger.debug("Set %s to %s" % (key, value))
-        self.config[key] = value
+        self.broker.set(key, value)
 
     def get(self, key):
-        """Get a config value"""
-        value = self.config[key]
-        self.logger.debug("Fetched %s, got %s" % (key, value))
+        value = self.broker.get(key)
+        # Do some typecasting
+        if key in self.int_properties:
+            value = int(value)
+        if key in self.bool_properties:
+            value = (value == 'True')
         return value
 
     def __getattr__(self, key):
-        """Convenience method to access get"""
         return self.get(key)
 
     def set_from_argparse(self, opts):

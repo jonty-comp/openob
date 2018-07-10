@@ -6,6 +6,7 @@ import logging
 
 from openob.logger import LoggerFactory
 from openob.node import Node
+from openob.broker import MessageBroker
 from openob.link_config import LinkConfig
 from openob.audio_interface import AudioInterface
 
@@ -54,8 +55,9 @@ parser_rx.set_defaults(mode='rx')
 opts = parser.parse_args()
 
 logger_factory = LoggerFactory(level=opts.verbose)
+MessageBroker.setup(opts.config_host)
 
-link_config = LinkConfig(opts.link_name, opts.config_host)
+link_config = LinkConfig(opts.link_name)
 link_config.set_from_argparse(opts)
 
 audio_interface = AudioInterface(opts.node_name)
