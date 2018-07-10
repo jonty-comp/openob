@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+
+import sys
+import argparse
+import logging
+import platform
+
+from openob.logger import LoggerFactory
+from openob.manager import Manager
+
+parser = argparse.ArgumentParser(prog='openob', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('-v', '--verbose', action='store_const', help='Increase logging verbosity', const=logging.DEBUG, default=logging.INFO)
+parser.add_argument('config_host', type=str, help='The configuration server for this OpenOB Node')
+parser.add_argument('-n', '--host_name', type=str, help='The name of this manager node', default=platform.node())
+
+parser.add_argument('-d', '--driver', type=str, choices=['auto', 'alsa', 'jack', 'test'], default='auto', help='The audio driver for this manager')
+
+parser_alsa = parser.add_argument_group('alsa', 'Options when using ALSA driver')
+parser_alsa.add_argument('-in', '--alsa_device', type=str, default='hw:0', help='The ALSA device to connect to for input/output')
+parser_jack = parser.add_argument_group('jack', 'Options when using JACK driver')
+parser_jack.add_argument('-jn', '--jack_name', type=str, default='openob', help='JACK port name root')
+parser_jack.add_argument('-aj', '--jack_auto', action='store_false', help='Disable auto connection for JACK inputs')
+
+opts = parser.parse_args()
+
+logger_factory = LoggerFactory(level=opts.verbose)
+
+manager = Manager(opts.config_host, opts.host_name)
+manager.setup_from_argparse(opts)
+manager.run()

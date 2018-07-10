@@ -1,1 +1,1 @@
-__all__ = ["logger","link_config","rtp.rx","rtp.tx","node"]
+__all__ = ["logger","link_config","rtp.rx","rtp.tx","node","manager"]
