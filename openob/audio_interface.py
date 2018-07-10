@@ -17,9 +17,7 @@ class AudioInterface(object):
         self.node_name = node_name
         self.logger_factory = LoggerFactory()
         self.logger = self.logger_factory.getLogger('audio.%s' % self.interface_name)
-        self.broker = MessageBroker(
-            'node:%s:audio_interface:%s' % (self.node_name, self.interface_name)
-        )
+        self.broker = MessageBroker('audio:%s' % self.interface_name)
 
     def set(self, key, value):
         self.broker.set(key, value)

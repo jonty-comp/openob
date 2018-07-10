@@ -55,7 +55,7 @@ parser_rx.set_defaults(mode='rx')
 opts = parser.parse_args()
 
 logger_factory = LoggerFactory(level=opts.verbose)
-MessageBroker.setup(opts.config_host)
+MessageBroker.setup(opts.config_host, 'standalone')
 
 link_config = LinkConfig(opts.link_name)
 link_config.set_from_argparse(opts)

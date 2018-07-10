@@ -21,8 +21,7 @@ class LinkConfig(object):
         """
         self.link_name = link_name
         self.logger_factory = LoggerFactory()
-        identifier = 'link.%s.config' % self.link_name
-        self.logger = self.logger_factory.getLogger('link.%s.config' % self.link_name)
+        self.logger = self.logger_factory.getLogger('link.%s' % self.link_name)
         self.broker = MessageBroker('link:%s' % self.link_name)
 
     def set(self, key, value):

@@ -13,13 +13,14 @@ class MessageBroker(object):
         self.element = element
         
     @staticmethod
-    def setup(redis_host):        
+    def setup(redis_host, host_name):        
         if MessageBroker._isSetup is False:
             MessageBroker.redis_host = redis_host
             logger_factory = LoggerFactory()
             logger = logger_factory.getLogger('broker')
             logger.info('Connecting to configuration host %s' % MessageBroker.redis_host)
 
+            MessageBroker.host_name = host_name
             MessageBroker.redis = None
             while True:
                 try:
@@ -40,7 +41,7 @@ class MessageBroker(object):
 
     def scoped_key(self, key):
         """Return an appropriate key name scoped to an element"""
-        return ("openob:%s:%s" % (self.element, key))
+        return ("openob:%s:%s:%s" % (MessageBroker.host_name, self.element, key))
 
     def blocking_get(self, key):
         """Get a value, blocking until it's not None if needed"""
@@ -55,7 +56,7 @@ class MessageBroker(object):
         """Set a value in the config store"""
         scoped_key = self.scoped_key(key)
         self.redis.set(scoped_key, value)
-        self.logger.debug('Set %s to %s' % (key, value))
+        self.logger.debug('Set %s to %s' % (scoped_key, value))
         return value
 
     def get(self, key):
@@ -63,7 +64,7 @@ class MessageBroker(object):
         scoped_key = self.scoped_key(key)
         value = self.redis.get(scoped_key)
         
-        self.logger.debug('Fetched %s, got %s' % (key, value))
+        self.logger.debug('Fetched %s, got %s' % (scoped_key, value))
         return value
 
     def unset(self, key):
