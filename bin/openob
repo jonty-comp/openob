@@ -64,4 +64,5 @@ audio_interface = AudioInterface(opts.node_name)
 audio_interface.set_from_argparse(opts)
 
 node = Node(opts.node_name)
-node.run_link(link_config, audio_interface)
+node.start_link(link_config, audio_interface)
+node.loop()

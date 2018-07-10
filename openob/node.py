@@ -29,9 +29,9 @@ class Node(object):
         self.logger_factory = LoggerFactory()
         self.logger = self.logger_factory.getLogger('node.%s' % self.node_name)
 
-    def run_link(self, link_config, audio_interface):
+    def start_link(self, link_config, audio_interface):
         """
-          Run a new TX or RX node.
+          Start a new TX or RX node.
         """
         # We're now entering the realm where we should desperately try and
         # maintain a link under all circumstances forever.
@@ -47,7 +47,8 @@ class Node(object):
                         caps = transmitter.get_caps()
                         link_logger.debug("Got caps from transmitter, setting config")
                         link_config.set("caps", caps)
-                        transmitter.loop()
+                        self.active_link = transmitter
+                        return
                     except Exception as e:
                         link_logger.exception("Transmitter crashed for some reason! Restarting...")
                         time.sleep(0.5)
@@ -59,7 +60,8 @@ class Node(object):
                         link_logger.info("Starting up receiver")
                         receiver = RTPReceiver(self.node_name, link_config, audio_interface)
                         receiver.run()
-                        receiver.loop()
+                        self.active_link = receiver
+                        return
                     except Exception as e:
                         link_logger.exception("Receiver crashed for some reason! Restarting...")
                         time.sleep(0.1)
@@ -69,3 +71,12 @@ class Node(object):
             except Exception as e:
                 link_logger.exception("Unknown exception thrown - please report this as a bug! %s" % e)
                 raise
+
+    def loop(self):
+        """
+            Run the mainloop for a single link
+        """
+        if self.active_link is None:
+            raise Exception('There is no active link')
+        
+        self.active_link.loop()
