@@ -29,6 +29,7 @@ class MessageBroker(object):
                         charset='utf-8',
                         decode_responses=True
                     )
+                    MessageBroker.pubsub = MessageBroker.redis.pubsub(ignore_subscribe_messages=True)
                     logger.info('Connected to Redis server at %s' % MessageBroker.redis_host)
                     break
                 except Exception as e:
@@ -76,3 +77,20 @@ class MessageBroker(object):
     def __getattr__(self, key):
         """Convenience method to access get"""
         return self.get(key)
+
+    def subscribe(self, channel, callback = None):
+        """Subscribe to a notification channel"""
+        channel = 'openob:%s' % channel
+        if callback is None:
+            return MessageBroker.pubsub.subscribe(channel)
+        else:
+            return MessageBroker.pubsub.subscribe(**{channel: callback})
+
+    def unsubscribe(self, channel):
+        """Unsubscribe from a notification channel"""
+        return MessageBroker.pubsub.unsubscribe(channel)
+
+    def check_messages(self):
+        """Check for new messages in subscribed channels"""
+        MessageBroker.pubsub.get_message()
+        return True # We need to return true to stop GLib from dropping the timer
