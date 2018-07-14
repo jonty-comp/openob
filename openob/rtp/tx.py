@@ -15,7 +15,7 @@ class RTPTransmitter(object):
         self.audio_interface = audio_interface
 
         self.logger_factory = LoggerFactory()
-        self.logger = self.logger_factory.getLogger('node.%s.link.%s.%s' % (node_name, self.link_config.name, self.audio_interface.mode))
+        self.logger = self.logger_factory.getLogger('node.%s.link.%s.rx' % (node_name, self.link_config.link_name))
         self.logger.info('Creating transmission pipeline')
 
         self.build_pipeline()

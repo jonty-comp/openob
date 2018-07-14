@@ -14,7 +14,7 @@ class RTPReceiver(object):
         self.audio_interface = audio_interface
 
         self.logger_factory = LoggerFactory()
-        self.logger = self.logger_factory.getLogger('node.%s.link.%s.%s' % (node_name, self.link_config.name, self.audio_interface.mode))
+        self.logger = self.logger_factory.getLogger('node.%s.link.%s.rx' % (node_name, self.link_config.link_name))
         self.logger.info('Creating reception pipeline')
 
         self.build_pipeline()
@@ -55,12 +55,13 @@ class RTPReceiver(object):
         bin = Gst.Bin.new('audio')
 
         # Audio output
-        if self.audio_interface.type == 'auto':
+        interface_type = self.audio_interface.type
+        if interface_type == 'auto':
             sink = Gst.ElementFactory.make('autoaudiosink')
-        elif self.audio_interface.type == 'alsa':
+        elif interface_type == 'alsa':
             sink = Gst.ElementFactory.make('alsasink')
             sink.set_property('device', self.audio_interface.alsa_device)
-        elif self.audio_interface.type == 'jack':
+        elif interface_type == 'jack':
             sink = Gst.ElementFactory.make('jackaudiosink')
             if self.audio_interface.jack_auto:
                 sink.set_property('connect', 'auto')
@@ -68,8 +69,11 @@ class RTPReceiver(object):
                 sink.set_property('connect', 'none')
             sink.set_property('name', self.audio_interface.jack_name)
             sink.set_property('client-name', self.audio_interface.jack_name)
-        elif self.audio_interface.type == 'test':
+        elif interface_type == 'test':
             sink = Gst.ElementFactory.make('fakesink')
+        else:
+            self.logger.critical('Unknown audio interface type: %s' % interface_type)
+            raise Exception
 
         bin.add(sink)
         
@@ -100,17 +104,19 @@ class RTPReceiver(object):
         bin = Gst.Bin.new('decoder')
 
         # Decoding and depayloading
-        if self.link_config.encoding == 'opus':
+        encoding = self.link_config.encoding
+        if encoding == 'opus':
             decoder = Gst.ElementFactory.make('opusdec', 'decoder')
             decoder.set_property('use-inband-fec', True)  # FEC
             decoder.set_property('plc', True)  # Packet loss concealment
             depayloader = Gst.ElementFactory.make(
                 'rtpopusdepay', 'depayloader')
-        elif self.link_config.encoding == 'pcm':
+        elif encoding == 'pcm':
             depayloader = Gst.ElementFactory.make(
                 'rtpL16depay', 'depayloader')
         else:
-            self.logger.critical('Unknown encoding type %s' % self.link_config.encoding)
+            self.logger.critical('Unknown encoding type %s' % encoding)
+            raise Exception
         
         bin.add(depayloader)
 
