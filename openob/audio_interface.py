@@ -23,11 +23,12 @@ class AudioInterface(object):
 
     def get(self, key):
         value = self.broker.get(key)
-        # Do some typecasting
-        if key in self.int_properties:
-            value = int(value)
-        if key in self.bool_properties:
-            value = (value == 'True')
+        if value is not None:
+            # Do some typecasting
+            if key in self.int_properties:
+                value = int(value)
+            if key in self.bool_properties:
+                value = (value == 'True')
         return value
 
     def __getattr__(self, key):
@@ -43,9 +44,10 @@ class AudioInterface(object):
                 self.set("samplerate", opts.samplerate)
             elif opts.mode == "rx":
                 driver = opts.audio_output
-            self.set('type', driver)
         else:
             driver = opts.driver
+
+        self.set('type', driver)
 
         if driver == "alsa":
             self.set("alsa_device", opts.alsa_device)

@@ -29,11 +29,12 @@ class LinkConfig(object):
 
     def get(self, key):
         value = self.broker.get(key)
-        # Do some typecasting
-        if key in self.int_properties:
-            value = int(value)
-        if key in self.bool_properties:
-            value = (value == 'True')
+        if value is not None:
+            # Do some typecasting
+            if key in self.int_properties:
+                value = int(value)
+            if key in self.bool_properties:
+                value = (value == 'True')
         
         return value
 

@@ -85,6 +85,9 @@ class RTPTransmitter(object):
             source.set_property('client-name', self.audio_interface.jack_name)
         elif interface_type == 'test':
             source = Gst.ElementFactory.make('audiotestsrc')
+        else:
+            self.logger.critical('Unknown audio interface type: %s' % interface_type)
+            raise Exception
 
         bin.add(source)
 
@@ -109,7 +112,7 @@ class RTPTransmitter(object):
 
         # if audio_rate has been specified, then add that to the capsfilter
         samplerate = self.audio_interface.samplerate
-        if samplerate != 0:
+        if samplerate is not None and samplerate != 0:
             caps.set_value('rate', samplerate)
         
         self.logger.debug(caps.to_string())
@@ -146,6 +149,7 @@ class RTPTransmitter(object):
             payloader = Gst.ElementFactory.make('rtpL16pay', 'payloader')
         else:
             self.logger.critical('Unknown encoding type %s' % self.link_config.encoding)
+            raise Exception
 
         bin.add(payloader)
 

@@ -11,7 +11,7 @@ from openob.manager import Manager
 parser = argparse.ArgumentParser(prog='openob', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-v', '--verbose', action='store_const', help='Increase logging verbosity', const=logging.DEBUG, default=logging.INFO)
 parser.add_argument('config_host', type=str, help='The configuration server for this OpenOB Node')
-parser.add_argument('-n', '--host_name', type=str, help='The name of this manager node', default=platform.node())
+parser.add_argument('-n', '--host_name', type=str, help='The name of this manager node', default=platform.node().lower())
 
 parser.add_argument('-d', '--driver', type=str, choices=['auto', 'alsa', 'jack', 'test'], default='auto', help='The audio driver for this manager')
 

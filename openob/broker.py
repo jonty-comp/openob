@@ -1,5 +1,6 @@
 from openob.logger import LoggerFactory
 import redis
+import time
 
 class MessageBroker(object):
     _isSetup = False
@@ -92,5 +93,8 @@ class MessageBroker(object):
 
     def check_messages(self):
         """Check for new messages in subscribed channels"""
-        MessageBroker.pubsub.get_message()
+        try:
+            MessageBroker.pubsub.get_message()
+        except Exception as e:
+            self.logger.error('Error checking for messages: %s' % e.message)
         return True # We need to return true to stop GLib from dropping the timer
