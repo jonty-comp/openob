@@ -45,7 +45,7 @@ class AudioInterface(object):
             elif opts.mode == "rx":
                 driver = opts.audio_output
         else:
-            driver = opts.driver
+            driver = opts.audio_driver
 
         self.set('type', driver)
 

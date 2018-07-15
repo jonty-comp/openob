@@ -13,7 +13,7 @@ parser.add_argument('-v', '--verbose', action='store_const', help='Increase logg
 parser.add_argument('config_host', type=str, help='The configuration server for this OpenOB Node')
 parser.add_argument('-n', '--host_name', type=str, help='The name of this manager node', default=platform.node().lower())
 
-parser.add_argument('-d', '--driver', type=str, choices=['auto', 'alsa', 'jack', 'test'], default='auto', help='The audio driver for this manager')
+parser.add_argument('-a', '--audio_driver', type=str, choices=['auto', 'alsa', 'jack', 'test'], default='auto', help='The audio driver for this manager')
 
 parser_alsa = parser.add_argument_group('alsa', 'Options when using ALSA driver')
 parser_alsa.add_argument('-in', '--alsa_device', type=str, default='hw:0', help='The ALSA device to connect to for input/output')
