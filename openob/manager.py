@@ -63,7 +63,7 @@ class Manager(object):
 
         try:
             self.logger.debug('Setting up new %s link %s' % (audio_interface.mode, link_name))
-            node = Node('%s_%s' % (audio_interface.mode, self.host_name))
+            node = Node('%s_%s' % (audio_interface.interface_name, self.host_name))
             
             node.start_link(link_config, audio_interface)
         except Exception as e:
