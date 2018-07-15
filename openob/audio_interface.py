@@ -23,6 +23,9 @@ class AudioInterface(object):
 
     def get(self, key):
         value = self.broker.get(key)
+        if value == 'None':
+            value = None
+            
         if value is not None:
             # Do some typecasting
             if key in self.int_properties:

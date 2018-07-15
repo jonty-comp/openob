@@ -5,13 +5,18 @@ import time
 class MessageBroker(object):
     _isSetup = False
 
-    def __init__(self, element):
+    def __init__(self, element, **kwargs):
         if MessageBroker._isSetup is False:
             raise Exception('Message Broker has not been configured')
         self.logger_factory = LoggerFactory()
         self.logger = self.logger_factory.getLogger('broker.%s' % element.replace(':','.'))
         self.logger.info('Setting up message broker for %s' % element)
         self.element = element
+
+        if 'scope' in kwargs:
+            self.scope = kwargs['scope']
+        else:
+            self.scope = 'local'
         
     @staticmethod
     def setup(redis_host, host_name):        
@@ -43,7 +48,10 @@ class MessageBroker(object):
 
     def scoped_key(self, key):
         """Return an appropriate key name scoped to an element"""
-        return ("openob:%s:%s:%s" % (MessageBroker.host_name, self.element, key))
+        if self.scope == 'local':
+            return ("openob:%s:%s:%s" % (MessageBroker.host_name, self.element, key))
+        elif self.scope == 'global':
+            return ("openob:%s:%s" % (self.element, key))
 
     def blocking_get(self, key):
         """Get a value, blocking until it's not None if needed"""

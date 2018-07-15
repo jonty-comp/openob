@@ -15,6 +15,8 @@ class LinkConfig(object):
     int_properties = ['port', 'jitter_buffer', 'opus_framesize', 'opus_complexity', 'bitrate', 'opus_loss_expectation']
     bool_properties = ['opus_dtx', 'opus_fec', 'multicast']
 
+    required_fields = ['encoding', 'receiver_host']
+
     def __init__(self, link_name):
         """
             Set up a new LinkConfig instance - needs to know the link name
@@ -22,7 +24,7 @@ class LinkConfig(object):
         self.link_name = link_name
         self.logger_factory = LoggerFactory()
         self.logger = self.logger_factory.getLogger('link.%s' % self.link_name)
-        self.broker = MessageBroker('link:%s' % self.link_name)
+        self.broker = MessageBroker('link:%s' % self.link_name, scope='global')
 
     def set(self, key, value):
         return self.broker.set(key, value)
@@ -35,6 +37,8 @@ class LinkConfig(object):
                 value = int(value)
             if key in self.bool_properties:
                 value = (value == 'True')
+        elif key in self.required_fields:
+            raise Exception('Required config key missing: %s' % key)
         
         return value
 

@@ -15,7 +15,7 @@ class RTPTransmitter(object):
         self.audio_interface = audio_interface
 
         self.logger_factory = LoggerFactory()
-        self.logger = self.logger_factory.getLogger('node.%s.link.%s.rx' % (node_name, self.link_config.link_name))
+        self.logger = self.logger_factory.getLogger('node.%s.link.%s.tx' % (node_name, self.link_config.link_name))
         self.logger.info('Creating transmission pipeline')
 
         self.build_pipeline()
@@ -135,12 +135,12 @@ class RTPTransmitter(object):
         # Encoding and payloading
         if self.link_config.encoding == 'opus':
             encoder = Gst.ElementFactory.make('opusenc', 'encoder')
-            encoder.set_property('bitrate', self.link_config.bitrate * 1000)
+            encoder.set_property('bitrate', (self.link_config.bitrate or 128) * 1000)
             encoder.set_property('tolerance', 80000000)
-            encoder.set_property('frame-size', self.link_config.opus_framesize)
-            encoder.set_property('complexity', self.link_config.opus_complexity)
+            encoder.set_property('frame-size', (self.link_config.opus_framesize or 20))
+            encoder.set_property('complexity', (self.link_config.opus_complexity or 9))
             encoder.set_property('inband-fec', self.link_config.opus_fec)
-            encoder.set_property('packet-loss-percentage', self.link_config.opus_loss_expectation)
+            encoder.set_property('packet-loss-percentage', (self.link_config.opus_loss_expectation or 0))
             encoder.set_property('dtx', self.link_config.opus_dtx)
 
             payloader = Gst.ElementFactory.make('rtpopuspay', 'payloader')
@@ -175,9 +175,11 @@ class RTPTransmitter(object):
 
         # TODO: Add a tee here, and sort out creating multiple UDP sinks for multipath
         udpsink = Gst.ElementFactory.make('udpsink', 'udpsink')
-        udpsink.set_property('host', self.link_config.receiver_host)
-        udpsink.set_property('port', self.link_config.port)
-        self.logger.info('Set receiver to %s:%i' % (self.link_config.receiver_host, self.link_config.port))
+        host = self.link_config.receiver_host
+        port = self.link_config.port or 3000
+        udpsink.set_property('host', host)
+        udpsink.set_property('port', port)
+        self.logger.info('Set receiver to %s:%i' % (host, port))
 
         if self.link_config.multicast:
             udpsink.set_property('auto_multicast', True)

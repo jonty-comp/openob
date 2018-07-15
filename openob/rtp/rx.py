@@ -140,7 +140,7 @@ class RTPReceiver(object):
         
         # Where audio comes in
         udpsrc = Gst.ElementFactory.make('udpsrc', 'udpsrc')
-        udpsrc.set_property('port', self.link_config.port)
+        udpsrc.set_property('port', (self.link_config.port or 3000))
         udpsrc.set_property('caps', udpsrc_caps)
         udpsrc.set_property('timeout', 3000000000)
         if self.link_config.multicast:
@@ -150,7 +150,7 @@ class RTPReceiver(object):
         bin.add(udpsrc)
 
         rtpbin = Gst.ElementFactory.make('rtpbin', 'rtpbin')
-        rtpbin.set_property('latency', self.link_config.jitter_buffer)
+        rtpbin.set_property('latency', (self.link_config.jitter_buffer or 40))
         rtpbin.set_property('autoremove', True)
         rtpbin.set_property('do-lost', True)
         bin.add(rtpbin)
