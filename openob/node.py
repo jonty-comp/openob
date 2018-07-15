@@ -45,7 +45,7 @@ class Node(object):
                     self.logger.debug("Got caps from transmitter, setting config")
                     link_config.set("caps", caps)
                     self.active_link = transmitter
-                    return
+                    return True
                 except Exception as e:
                     self.logger.exception("Transmitter crashed for some reason!")
             elif mode == 'rx':
@@ -57,7 +57,7 @@ class Node(object):
                     receiver = RTPReceiver(self.node_name, link_config, audio_interface)
                     receiver.run()
                     self.active_link = receiver
-                    return
+                    return True
                 except Exception as e:
                     self.logger.exception("Receiver crashed for some reason!")
             else:

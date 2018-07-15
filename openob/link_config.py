@@ -15,7 +15,7 @@ class LinkConfig(object):
     int_properties = ['port', 'jitter_buffer', 'opus_framesize', 'opus_complexity', 'bitrate', 'opus_loss_expectation']
     bool_properties = ['opus_dtx', 'opus_fec', 'multicast']
 
-    required_fields = ['encoding', 'receiver_host']
+    required_fields = ['encoding', 'receiver_host', 'port']
 
     def __init__(self, link_name):
         """

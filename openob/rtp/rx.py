@@ -140,7 +140,7 @@ class RTPReceiver(object):
         
         # Where audio comes in
         udpsrc = Gst.ElementFactory.make('udpsrc', 'udpsrc')
-        udpsrc.set_property('port', (self.link_config.port or 3000))
+        udpsrc.set_property('port', self.link_config.port)
         udpsrc.set_property('caps', udpsrc_caps)
         udpsrc.set_property('timeout', 3000000000)
         if self.link_config.multicast:

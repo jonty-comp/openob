@@ -176,7 +176,7 @@ class RTPTransmitter(object):
         # TODO: Add a tee here, and sort out creating multiple UDP sinks for multipath
         udpsink = Gst.ElementFactory.make('udpsink', 'udpsink')
         host = self.link_config.receiver_host
-        port = self.link_config.port or 3000
+        port = self.link_config.port
         udpsink.set_property('host', host)
         udpsink.set_property('port', port)
         self.logger.info('Set receiver to %s:%i' % (host, port))
