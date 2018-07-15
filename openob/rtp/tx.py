@@ -135,12 +135,12 @@ class RTPTransmitter(object):
         # Encoding and payloading
         if self.link_config.encoding == 'opus':
             encoder = Gst.ElementFactory.make('opusenc', 'encoder')
-            encoder.set_property('bitrate', int(self.link_config.bitrate) * 1000)
+            encoder.set_property('bitrate', self.link_config.bitrate * 1000)
             encoder.set_property('tolerance', 80000000)
             encoder.set_property('frame-size', self.link_config.opus_framesize)
-            encoder.set_property('complexity', int(self.link_config.opus_complexity))
+            encoder.set_property('complexity', self.link_config.opus_complexity)
             encoder.set_property('inband-fec', self.link_config.opus_fec)
-            encoder.set_property('packet-loss-percentage', int(self.link_config.opus_loss_expectation))
+            encoder.set_property('packet-loss-percentage', self.link_config.opus_loss_expectation)
             encoder.set_property('dtx', self.link_config.opus_dtx)
 
             payloader = Gst.ElementFactory.make('rtpopuspay', 'payloader')
