@@ -33,44 +33,39 @@ class Node(object):
         """
           Start a new TX or RX node.
         """
-        # We're now entering the realm where we should desperately try and
-        # maintain a link under all circumstances forever.
         self.logger.info("Link %s initial setup start on %s" % (link_config.link_name, self.node_name))
         mode = audio_interface.mode
-        while True:
-            try:
-                if mode == 'tx':
-                    try:
-                        self.logger.info("Starting up transmitter")
-                        transmitter = RTPTransmitter(self.node_name, link_config, audio_interface)
-                        transmitter.run()
-                        caps = transmitter.get_caps()
-                        self.logger.debug("Got caps from transmitter, setting config")
-                        link_config.set("caps", caps)
-                        self.active_link = transmitter
-                        return
-                    except Exception as e:
-                        self.logger.exception("Transmitter crashed for some reason! Restarting...")
-                        time.sleep(0.5)
-                elif mode == 'rx':
-                    self.logger.info("Waiting for transmitter capabilities...")
-                    caps = link_config.blocking_get("caps")
-                    self.logger.info("Got caps from transmitter")
-                    try:
-                        self.logger.info("Starting up receiver")
-                        receiver = RTPReceiver(self.node_name, link_config, audio_interface)
-                        receiver.run()
-                        self.active_link = receiver
-                        return
-                    except Exception as e:
-                        self.logger.exception("Receiver crashed for some reason! Restarting...")
-                        time.sleep(0.1)
-                else:
-                    self.logger.critical("Unknown audio interface mode (%s)!" % mode)
-                    sys.exit(1)
-            except Exception as e:
-                self.logger.exception("Unknown exception thrown - please report this as a bug! %s" % e)
-                raise
+        try:
+            if mode == 'tx':
+                try:
+                    self.logger.info("Starting up transmitter")
+                    transmitter = RTPTransmitter(self.node_name, link_config, audio_interface)
+                    transmitter.run()
+                    caps = transmitter.get_caps()
+                    self.logger.debug("Got caps from transmitter, setting config")
+                    link_config.set("caps", caps)
+                    self.active_link = transmitter
+                    return
+                except Exception as e:
+                    self.logger.exception("Transmitter crashed for some reason!")
+            elif mode == 'rx':
+                self.logger.info("Waiting for transmitter capabilities...")
+                caps = link_config.blocking_get("caps")
+                self.logger.info("Got caps from transmitter")
+                try:
+                    self.logger.info("Starting up receiver")
+                    receiver = RTPReceiver(self.node_name, link_config, audio_interface)
+                    receiver.run()
+                    self.active_link = receiver
+                    return
+                except Exception as e:
+                    self.logger.exception("Receiver crashed for some reason!")
+            else:
+                self.logger.critical("Unknown audio interface mode (%s)!" % mode)
+                sys.exit(1)
+        except Exception as e:
+            self.logger.exception("Unknown exception thrown - please report this as a bug! %s" % e)
+            raise
 
     def loop(self):
         """
