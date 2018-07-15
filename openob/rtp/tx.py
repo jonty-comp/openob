@@ -32,6 +32,10 @@ class RTPTransmitter(object):
                 time.sleep(0.1)
             else:
                 self.caps = caps.to_string()
+        
+    def stop(self):
+        self.logger.info('Stopping stream')
+        self.pipeline.set_state(Gst.State.NULL)
 
     def loop(self):
         try:

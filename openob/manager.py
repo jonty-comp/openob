@@ -51,15 +51,18 @@ class Manager(object):
         else:
             self.logger.debug('Message not for this manager')
 
-    def create_link(self, link_name, audio_interface):
+    def check_audio_interface(self, audio_interface):
         if audio_interface == self.audio_input.interface_name:
-            audio_interface = self.audio_input
+            return self.audio_input
         elif audio_interface == self.audio_output.interface_name:
-            audio_interface = self.audio_output
+            return self.audio_output
         else:
             # Unrecognised interface
             self.logger.exception('Unrecognised audio interface on this manager: %s' % audio_interface)
             return False
+
+    def create_link(self, link_name, audio_interface):
+        audio_interface = self.check_audio_interface(audio_interface)
 
         try:
             for node in self.nodes:
@@ -76,8 +79,18 @@ class Manager(object):
             self.logger.error('Error setting up link: %s' % e.message)
 
     def destroy_link(self, audio_interface):
-        # TODO: fetch link info based on specified audio interface and destroy link
-        pass
+        audio_interface = self.check_audio_interface(audio_interface)
+
+        try:
+            for node in self.nodes:
+                if node.node_name == '%s_%s' % (audio_interface.interface_name, self.host_name):
+                    self.logger.debug('Stopping node %s' % node.node_name)
+                    node.stop_link()
+                    self.nodes.remove(node)
+                    return True
+            self.logger.error('No link found for interface %s' % audio_interface.interface_name)
+        except Exception as e:
+            self.logger.error('Error destroying link: %s' % e.message)
 
     def reconfigure_link(self, link_name):
         # TODO: fetch link info based on specified link name and reconfigure parameters

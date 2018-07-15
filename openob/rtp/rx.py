@@ -23,6 +23,10 @@ class RTPReceiver(object):
         self.pipeline.set_state(Gst.State.PLAYING)
         self.logger.info('Listening for stream on %s:%i' % (self.link_config.receiver_host, self.link_config.port))
 
+    def stop(self):
+        self.logger.info('Stopping stream')
+        self.pipeline.set_state(Gst.State.NULL)
+
     def loop(self):
         try:
             self.main_loop = GLib.MainLoop()

@@ -66,6 +66,12 @@ class Node(object):
         except Exception as e:
             self.logger.exception("Unknown exception thrown - please report this as a bug! %s" % e)
             raise
+    
+    def stop_link(self):
+        if self.active_link is None:
+            raise Exception('Node not active')
+        else:
+            self.active_link.stop()
 
     def loop(self):
         """
