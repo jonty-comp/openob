@@ -7,6 +7,8 @@ from openob.link_config import LinkConfig
 from openob.audio_interface import AudioInterface
 
 class Manager(object):
+    nodes = []
+
     def __init__(self, config_host, host_name):
         self.host_name = host_name
         self.logger_factory = LoggerFactory()
@@ -50,8 +52,6 @@ class Manager(object):
             self.logger.debug('Message not for this manager')
 
     def create_link(self, link_name, audio_interface):
-        link_config = LinkConfig(link_name)
-
         if audio_interface == self.audio_input.interface_name:
             audio_interface = self.audio_input
         elif audio_interface == self.audio_output.interface_name:
@@ -62,10 +62,16 @@ class Manager(object):
             return False
 
         try:
+            for node in self.nodes:
+                if node.node_name == '%s_%s' % (audio_interface.interface_name, self.host_name):
+                    raise Exception('%s is already assigned to a node' % audio_interface.interface_name)
+
+            link_config = LinkConfig(link_name)
             self.logger.debug('Setting up new %s link %s' % (audio_interface.mode, link_name))
             node = Node('%s_%s' % (audio_interface.interface_name, self.host_name))
             
             node.start_link(link_config, audio_interface)
+            self.nodes.append(node)
         except Exception as e:
             self.logger.error('Error setting up link: %s' % e.message)
 
