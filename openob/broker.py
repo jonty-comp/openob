@@ -10,7 +10,7 @@ class MessageBroker(object):
             raise Exception('Message Broker has not been configured')
         self.logger_factory = LoggerFactory()
         self.logger = self.logger_factory.getLogger('broker.%s' % element.replace(':','.'))
-        self.logger.info('Setting up message broker for %s' % element)
+        self.logger.debug('Setting up message broker for %s' % element)
         self.element = element
 
         if 'scope' in kwargs:

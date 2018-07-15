@@ -70,7 +70,7 @@ class Manager(object):
                     raise Exception('%s is already assigned to a node' % audio_interface.interface_name)
 
             link_config = LinkConfig(link_name)
-            self.logger.debug('Setting up new %s link %s' % (audio_interface.mode, link_name))
+            self.logger.info('Setting up new %s link %s' % (audio_interface.mode, link_name))
             node = Node('%s_%s' % (audio_interface.interface_name, self.host_name))
             
             if node.start_link(link_config, audio_interface):
@@ -84,7 +84,7 @@ class Manager(object):
         try:
             for node in self.nodes:
                 if node.node_name == '%s_%s' % (audio_interface.interface_name, self.host_name):
-                    self.logger.debug('Stopping node %s' % node.node_name)
+                    self.logger.info('Stopping node %s' % node.node_name)
                     node.stop_link()
                     self.nodes.remove(node)
                     return True
